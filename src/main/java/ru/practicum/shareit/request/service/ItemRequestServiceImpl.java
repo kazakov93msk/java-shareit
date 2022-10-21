@@ -23,9 +23,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequest findItemRequestById(Long itemRequestId) {
-        return itemRequestRep.findItemRequestById(itemRequestId).orElseThrow(
+        ItemRequest itemRequest = itemRequestRep.findItemRequestById(itemRequestId).orElseThrow(
                 () -> new NotFoundException(ItemRequest.class.toString(), itemRequestId)
         );
+        log.debug("RequestService: ItemRequest {} returned.", itemRequest);
+        return itemRequest;
     }
 
     @Override
@@ -33,7 +35,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (itemRequest.getId() != null && itemRequestRep.itemRequestExists(itemRequest.getId())) {
             throw new AlreadyExistsException(ItemRequest.class.toString(), itemRequest.getId());
         }
-        return itemRequestRep.createItemRequest(itemRequest);
+        itemRequest = itemRequestRep.createItemRequest(itemRequest);
+        log.debug("RequestService: ItemRequest {} created.", itemRequest);
+        return itemRequest;
     }
 
     @Override
@@ -41,6 +45,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (!itemRequestRep.itemRequestExists(itemRequest.getId())) {
             throw new NotFoundException(ItemRequest.class.toString(), itemRequest.getId());
         }
+        log.debug("RequestService: Feature not realized now.");
         return itemRequestRep.updateItemRequest(itemRequest);
     }
 
@@ -50,5 +55,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new NotFoundException(ItemRequest.class.toString(), itemRequestId);
         }
         itemRequestRep.deleteItemRequestById(itemRequestId);
+        log.debug("RequestService: ItemRequest with ID = {} deleted.", itemRequestId);
     }
 }

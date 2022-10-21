@@ -24,9 +24,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long id) {
-        return userRep.findUserById(id).orElseThrow(
+        User user = userRep.findUserById(id).orElseThrow(
                 () -> new NotFoundException(User.class.toString(), id)
         );
+        log.debug("UserService: User {} returned.", user);
+        return user;
     }
 
     @Override
@@ -37,7 +39,9 @@ public class UserServiceImpl implements UserService {
         if (userRep.findAllUsers().contains(user)) {
             throw new AlreadyExistsException(User.class.toString(), user.getEmail());
         }
-        return userRep.createUser(user);
+        user = userRep.createUser(user);
+        log.debug("User {} created.", user);
+        return user;
     }
 
     @Override
@@ -56,6 +60,7 @@ public class UserServiceImpl implements UserService {
         if (user.getEmail() != null) {
             oldUser.setEmail(user.getEmail());
         }
+        log.debug("UserService: User with ID = {} updated. New user data: {}.", userId, oldUser);
         return userRep.updateUser(userId, oldUser);
     }
 
@@ -65,5 +70,6 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException(User.class.toString(), userId);
         }
         userRep.deleteUserById(userId);
+        log.debug("UserService: User with ID = {} deleted.", userId);
     }
 }

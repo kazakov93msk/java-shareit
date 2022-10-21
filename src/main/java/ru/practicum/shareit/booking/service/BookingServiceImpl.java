@@ -23,9 +23,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking findBookingById(Long bookingId) {
-        return bookingRep.findBookingById(bookingId).orElseThrow(
+        Booking booking =  bookingRep.findBookingById(bookingId).orElseThrow(
                 () -> new NotFoundException(Booking.class.toString(), bookingId)
         );
+        log.debug("BookingService: Booking {} returned.", booking);
+        return booking;
     }
 
     @Override
@@ -33,7 +35,9 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getId() != null && bookingRep.bookingExists(booking.getId())) {
             throw new AlreadyExistsException(Booking.class.toString(), booking.getId());
         }
-        return bookingRep.createBooking(booking);
+        booking = bookingRep.createBooking(booking);
+        log.debug("BookingService: Booking {} created.", booking);
+        return booking;
     }
 
     @Override
@@ -41,6 +45,7 @@ public class BookingServiceImpl implements BookingService {
         if (!bookingRep.bookingExists(booking.getId())) {
             throw new NotFoundException(Booking.class.toString(), booking.getId());
         }
+        log.debug("BookingService: Feature not realized now.");
         return bookingRep.updateBooking(booking);
     }
 
@@ -50,5 +55,6 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException(Booking.class.toString(), bookingId);
         }
         bookingRep.deleteBookingById(bookingId);
+        log.debug("BookingService: Booking with ID = {} deleted.", bookingId);
     }
 }

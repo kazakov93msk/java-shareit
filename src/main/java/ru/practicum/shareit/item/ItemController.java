@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
+@Slf4j
 public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
@@ -26,6 +28,7 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> findAllItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.debug("GET: Get all items where owner ID = {}.", userId);
         return itemService.findAllItems(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -33,11 +36,13 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto findItemById(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId) {
+        log.debug("GET: Get item by ID = {}.", itemId);
         return ItemMapper.toItemDto(itemService.findItemById(userId, itemId));
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItemByParams(@RequestParam String text) {
+        log.debug("GET: Search item containing text '{}' in title or description.", text);
         return itemService.searchItemsByText(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -45,6 +50,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemDto itemDto) {
+        log.debug("POST: Create item {} with owner ID = {}.", itemDto, userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setRequest(itemDto.getRequest() != null ? requestService.findItemRequestById(itemDto.getRequest()) : null);
         item.setOwner(userService.findUserById(userId));
@@ -57,6 +63,7 @@ public class ItemController {
             @PathVariable Long itemId,
             @RequestBody ItemDto itemDto
     ) {
+        log.debug("PATCH: Update item {} where owner ID = {}.", itemDto, userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setRequest(itemDto.getRequest() != null ? requestService.findItemRequestById(itemDto.getRequest()) : null);
         item.setOwner(userService.findUserById(userId));
@@ -65,6 +72,7 @@ public class ItemController {
 
     @DeleteMapping("/{itemId}")
     public void deleteItem(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId) {
+        log.debug("DELETE: Delete item with ID = {} where owner ID = {}.", itemId, userId);
         itemService.deleteItemById(userId, itemId);
     }
 
