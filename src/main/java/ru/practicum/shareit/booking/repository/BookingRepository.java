@@ -1,20 +1,32 @@
 package ru.practicum.shareit.booking.repository;
 
-import ru.practicum.shareit.booking.Booking;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.booking.dto.ShortBookingDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.property.BookingStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-public interface BookingRepository {
-    List<Booking> findAllBookings();
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+    List<Booking> findAllByBooker_IdOrderByStartDesc(Long bookerId);
 
-    Optional<Booking> findBookingById(Long bookingId);
+    List<Booking> findAllByItemOwnerIdOrderByStartDesc(Long ownerId);
 
-    Booking createBooking(Booking booking);
+    Booking findBookingByItemIdAndBookerIdAndStatusAndEndBefore(
+            Long itemId, Long bookerId, BookingStatus status, LocalDateTime now
+    );
 
-    Booking updateBooking(Booking booking);
+    @Query("select new ru.practicum.shareit.booking.dto.ShortBookingDto(b.id, b.booker.id) " +
+            "from Booking b " +
+            "where b.item.id = ?1 and b.end < ?2 and b.booker.id <> b.item.owner.id " +
+            "order by b.end desc")
+    List<ShortBookingDto> findLastBooking(Long itemId, LocalDateTime now);
 
-    void deleteBookingById(Long bookingId);
-
-    boolean bookingExists(Long bookingId);
+    @Query("select new ru.practicum.shareit.booking.dto.ShortBookingDto(b.id, b.booker.id) " +
+            "from Booking b " +
+            "where b.item.id = ?1 and b.start > ?2 and b.booker.id <> b.item.owner.id " +
+            "order by b.start")
+    List<ShortBookingDto> findNextBooking(Long itemId, LocalDateTime now);
 }
