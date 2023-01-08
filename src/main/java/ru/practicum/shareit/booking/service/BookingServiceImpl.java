@@ -1,60 +1,113 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.property.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.AlreadyExistsException;
+import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.OperationAccessException;
+import ru.practicum.shareit.exception.ValidationDataException;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRep;
+    private final UserService userService;
+
 
     @Override
-    public List<Booking> findAllBookings() {
-        return bookingRep.findAllBookings();
+    public List<Booking> findAllByBookerId(Long bookerId, String bookingState) {
+        userService.findUserById(bookerId);
+        List<Booking> bookings = bookingRep.findAllByBooker_IdOrderByStartDesc(bookerId);
+        return filterBookingByState(bookings, bookingState);
     }
 
     @Override
-    public Booking findBookingById(Long bookingId) {
-        Booking booking =  bookingRep.findBookingById(bookingId).orElseThrow(
-                () -> new NotFoundException(Booking.class.toString(), bookingId)
+    public List<Booking> findAllByItemsOwnerId(Long ownerId, String bookingState) {
+        userService.findUserById(ownerId);
+        List<Booking> bookings = bookingRep.findAllByItemOwnerIdOrderByStartDesc(ownerId);
+        return filterBookingByState(bookings, bookingState);
+    }
+
+    @Override
+    public Booking findBookingById(Long userId, Long bookingId) {
+        Booking booking = bookingRep.findById(bookingId).orElseThrow(
+                () -> new NotFoundException(Booking.class.getName(), bookingId)
         );
-        log.debug("BookingService: Booking {} returned.", booking);
+        if (!booking.getItem().getOwner().getId().equals(userId)
+                && !booking.getBooker().getId().equals(userId)) {
+            throw new OperationAccessException(Booking.class.getSimpleName(), userId, bookingId);
+        }
         return booking;
     }
 
     @Override
-    public Booking createBooking(Booking booking) {
-        if (booking.getId() != null && bookingRep.bookingExists(booking.getId())) {
-            throw new AlreadyExistsException(Booking.class.toString(), booking.getId());
+    public Booking approveBookingById(Long userId, Long bookingId, Boolean isPositiveDecision) {
+        Booking booking = bookingRep.findById(bookingId).orElseThrow(
+                () -> new NotFoundException(Booking.class.getName(), bookingId)
+        );
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
+            throw new OperationAccessException(Item.class.getSimpleName(), userId, booking.getItem().getId());
         }
-        booking = bookingRep.createBooking(booking);
-        log.debug("BookingService: Booking {} created.", booking);
-        return booking;
+        if (!BookingStatus.WAITING.equals(booking.getStatus())) {
+            throw new NotAvailableException("The booking decision has already been made.");
+        }
+        booking.setStatus(isPositiveDecision ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        return bookingRep.save(booking);
     }
 
     @Override
-    public Booking updateBooking(Booking booking) {
-        if (!bookingRep.bookingExists(booking.getId())) {
-            throw new NotFoundException(Booking.class.toString(), booking.getId());
+    public Booking createBooking(Long userId, Booking booking) {
+        booking.setStatus(BookingStatus.WAITING);
+        System.out.println(booking);
+        if (booking.getItem().getOwner().getId().equals(userId)) {
+            throw new OperationAccessException("The owner cannot be a booker.");
         }
-        log.debug("BookingService: Feature not realized now.");
-        return bookingRep.updateBooking(booking);
+        if (booking.getStart().isBefore(LocalDateTime.now())) {
+            throw new ValidationDataException("The start time cannot be less then now.");
+        }
+        if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().equals(booking.getStart())) {
+            throw new ValidationDataException("The end time cannot be less or equals than the start time.");
+        }
+        if (!booking.getItem().getAvailable()) {
+            throw new NotAvailableException(Item.class.getSimpleName(), booking.getItem().getId());
+        }
+        return bookingRep.save(booking);
     }
 
-    @Override
-    public void deleteBookingById(Long bookingId) {
-        if (!bookingRep.bookingExists(bookingId)) {
-            throw new NotFoundException(Booking.class.toString(), bookingId);
+    private List<Booking> filterBookingByState(List<Booking> bookings, String bookingState) {
+        switch (bookingState) {
+            case "ALL":
+                return bookings;
+            case "WAITING":
+            case "REJECTED":
+                BookingStatus bookingStatus = BookingStatus.valueOf(bookingState);
+                return bookings.stream()
+                        .filter(booking -> booking.getStatus().equals(bookingStatus))
+                        .collect(Collectors.toList());
+            case "CURRENT":
+                return bookings.stream()
+                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
+                        .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
+                        .collect(Collectors.toList());
+            case "PAST":
+                return bookings.stream()
+                        .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
+                        .collect(Collectors.toList());
+            case "FUTURE":
+                return bookings.stream()
+                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                        .collect(Collectors.toList());
+            default:
+                throw new IllegalArgumentException("Unknown state: " + bookingState);
         }
-        bookingRep.deleteBookingById(bookingId);
-        log.debug("BookingService: Booking with ID = {} deleted.", bookingId);
     }
 }

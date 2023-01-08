@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.property;
 
 public enum BookingStatus {
     WAITING,
