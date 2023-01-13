@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.comment.model.Comment;
-import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -34,10 +33,6 @@ public class Item {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
-    @ToString.Exclude
-    private Request request;
     @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
     @ToString.Exclude
