@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
-public class ItemDto {
+public class OutputItemDto {
     private Long id;
     @NotBlank
     private String name;

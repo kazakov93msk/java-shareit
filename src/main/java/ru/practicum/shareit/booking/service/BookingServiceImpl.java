@@ -2,39 +2,36 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.property.BookingState;
 import ru.practicum.shareit.booking.property.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.NotAvailableException;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.OperationAccessException;
-import ru.practicum.shareit.exception.ValidationDataException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRep;
     private final UserService userService;
 
 
     @Override
-    public List<Booking> findAllByBookerId(Long bookerId, String bookingState) {
+    public List<Booking> findAllByBookerId(Long bookerId, BookingState state) {
         userService.findUserById(bookerId);
-        List<Booking> bookings = bookingRep.findAllByBooker_IdOrderByStartDesc(bookerId);
-        return filterBookingByState(bookings, bookingState);
+        return filterUserBookingsByState(bookerId, state, false);
     }
 
     @Override
-    public List<Booking> findAllByItemsOwnerId(Long ownerId, String bookingState) {
+    public List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state) {
         userService.findUserById(ownerId);
-        List<Booking> bookings = bookingRep.findAllByItemOwnerIdOrderByStartDesc(ownerId);
-        return filterBookingByState(bookings, bookingState);
+        return filterUserBookingsByState(ownerId, state, true);
     }
 
     @Override
@@ -50,6 +47,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public Booking approveBookingById(Long userId, Long bookingId, Boolean isPositiveDecision) {
         Booking booking = bookingRep.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(Booking.class.getName(), bookingId)
@@ -61,13 +59,13 @@ public class BookingServiceImpl implements BookingService {
             throw new NotAvailableException("The booking decision has already been made.");
         }
         booking.setStatus(isPositiveDecision ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return bookingRep.save(booking);
+        return booking;
     }
 
     @Override
+    @Transactional
     public Booking createBooking(Long userId, Booking booking) {
         booking.setStatus(BookingStatus.WAITING);
-        System.out.println(booking);
         if (booking.getItem().getOwner().getId().equals(userId)) {
             throw new OperationAccessException("The owner cannot be a booker.");
         }
@@ -83,31 +81,22 @@ public class BookingServiceImpl implements BookingService {
         return bookingRep.save(booking);
     }
 
-    private List<Booking> filterBookingByState(List<Booking> bookings, String bookingState) {
-        switch (bookingState) {
-            case "ALL":
-                return bookings;
-            case "WAITING":
-            case "REJECTED":
-                BookingStatus bookingStatus = BookingStatus.valueOf(bookingState);
-                return bookings.stream()
-                        .filter(booking -> booking.getStatus().equals(bookingStatus))
-                        .collect(Collectors.toList());
-            case "CURRENT":
-                return bookings.stream()
-                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                        .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
-                        .collect(Collectors.toList());
-            case "PAST":
-                return bookings.stream()
-                        .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
-                        .collect(Collectors.toList());
-            case "FUTURE":
-                return bookings.stream()
-                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                        .collect(Collectors.toList());
+    private List<Booking> filterUserBookingsByState(Long userId, BookingState state, Boolean isOwner) {
+        switch (state) {
+            case ALL:
+                return bookingRep.findByUserId(userId, isOwner);
+            case WAITING:
+            case REJECTED:
+                BookingStatus bookingStatus = BookingStatus.valueOf(state.toString());
+                return bookingRep.findByUserIdAndStatus(userId, isOwner, bookingStatus);
+            case CURRENT:
+                return bookingRep.findByUserCurrent(userId, isOwner, LocalDateTime.now());
+            case PAST:
+                return bookingRep.findByUserPast(userId, isOwner, LocalDateTime.now());
+            case FUTURE:
+                return bookingRep.findByUserFuture(userId, isOwner, LocalDateTime.now());
             default:
-                throw new IllegalArgumentException("Unknown state: " + bookingState);
+                throw new WrongBookingStateException("Unknown state: " + state);
         }
     }
 }

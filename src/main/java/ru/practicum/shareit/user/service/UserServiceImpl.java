@@ -1,9 +1,8 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.AlreadyExistsException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -12,6 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRep;
 
@@ -28,34 +28,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User createUser(User user) {
-        try {
-            return userRep.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new AlreadyExistsException(User.class.toString(), user.getEmail());
-        }
+        return userRep.save(user);
     }
 
     @Override
+    @Transactional
     public User updateUser(Long userId, User user) {
         User oldUser = userRep.findById(userId).orElseThrow(
                 () -> new NotFoundException(User.class.toString(), userId)
         );
-        if (user.getName() != null) {
+        if (user.getName() != null && !user.getName().isBlank()) {
             oldUser.setName(user.getName());
         }
-        if (user.getEmail() != null) {
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
             oldUser.setEmail(user.getEmail());
         }
-        try {
-            user = userRep.save(oldUser);
-            return user;
-        } catch (DataIntegrityViolationException e) {
-            throw new AlreadyExistsException(User.class.toString(), user.getEmail());
-        }
+        return oldUser;
     }
 
     @Override
+    @Transactional
     public void deleteUserById(Long userId) {
         if (!userRep.existsById(userId)) {
             throw new NotFoundException(User.class.toString(), userId);

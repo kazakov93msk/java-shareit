@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice("ru.practicum.shareit")
 @Slf4j
@@ -25,7 +26,8 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<?> handleAlreadyExist(final AlreadyExistsException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(Map.of("error", e.getMessage()), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(Map.of("error", Objects.requireNonNull(e.getMessage())), new HttpHeaders(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler
@@ -63,8 +65,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    public ResponseEntity<?> handleWrongBookingState(final WrongBookingStateException e) {
+        log.debug(e.getMessage());
+        return new ResponseEntity<>(Map.of("error",  e.getMessage()), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<?> handleInternalServerError(final Throwable e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(Map.of("error", e.getMessage()), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), new HttpHeaders(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

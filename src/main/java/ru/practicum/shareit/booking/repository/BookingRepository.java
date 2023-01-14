@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.property.BookingStatus;
 
@@ -10,23 +9,47 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findAllByBooker_IdOrderByStartDesc(Long bookerId);
-
-    List<Booking> findAllByItemOwnerIdOrderByStartDesc(Long ownerId);
 
     Booking findBookingByItemIdAndBookerIdAndStatusAndEndBefore(
             Long itemId, Long bookerId, BookingStatus status, LocalDateTime now
     );
 
-    @Query("select new ru.practicum.shareit.booking.dto.ShortBookingDto(b.id, b.booker.id) " +
-            "from Booking b " +
-            "where b.item.id = ?1 and b.end < ?2 and b.booker.id <> b.item.owner.id " +
-            "order by b.end desc")
-    List<ShortBookingDto> findLastBooking(Long itemId, LocalDateTime now);
+    Booking findTopByItem_IdAndBooker_IdIsNotAndEndBeforeOrderByEndDesc(Long itemId, Long ownerId, LocalDateTime now);
 
-    @Query("select new ru.practicum.shareit.booking.dto.ShortBookingDto(b.id, b.booker.id) " +
+    Booking findTopByItem_IdAndBooker_IdIsNotAndStartAfterOrderByStart(Long itemId, Long ownerId, LocalDateTime now);
+
+    @Query("select b " +
             "from Booking b " +
-            "where b.item.id = ?1 and b.start > ?2 and b.booker.id <> b.item.owner.id " +
-            "order by b.start")
-    List<ShortBookingDto> findNextBooking(Long itemId, LocalDateTime now);
+            "where (case when ?2 = true then b.item.owner.id else b.booker.id end) = ?1 " +
+            "order by b.start desc ")
+    List<Booking> findByUserId(Long userId, Boolean isOwner);
+
+    @Query("select b " +
+            "from Booking b " +
+            "where (case when ?2 = true then b.item.owner.id else b.booker.id end) = ?1 " +
+            "  and b.status = ?3 " +
+            "order by b.start desc ")
+    List<Booking> findByUserIdAndStatus(Long userId, Boolean isOwner, BookingStatus status);
+
+    @Query("select b " +
+            "from Booking b " +
+            "where (case when ?2 = true then b.item.owner.id else b.booker.id end) = ?1 " +
+            "  and b.start <= ?3 " +
+            "  and b.end >= ?3 " +
+            "order by b.start desc ")
+    List<Booking> findByUserCurrent(Long userId, Boolean isOwner, LocalDateTime now);
+
+    @Query("select b " +
+            "from Booking b " +
+            "where (case when ?2 = true then b.item.owner.id else b.booker.id end) = ?1 " +
+            "  and b.start >= ?3 " +
+            "order by b.start desc ")
+    List<Booking> findByUserFuture(Long userId, Boolean isOwner, LocalDateTime now);
+
+    @Query("select b " +
+            "from Booking b " +
+            "where (case when ?2 = true then b.item.owner.id else b.booker.id end) = ?1 " +
+            "  and b.end <= ?3 " +
+            "order by b.start desc ")
+    List<Booking> findByUserPast(Long userId, Boolean isOwner, LocalDateTime now);
 }

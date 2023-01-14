@@ -1,16 +1,14 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.property.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.OperationAccessException;
-import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.model.Item;
@@ -20,9 +18,11 @@ import ru.practicum.shareit.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRep;
     private final CommentRepository commentRep;
@@ -32,14 +32,17 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Item> findByUserId(Long userId) {
         userService.findUserById(userId);
-        return itemRep.findAllByOwner_Id(userId);
+        return itemRep.findAllByOwner_Id(userId).stream()
+                .map(this::setLastAndNextBookings)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Item findItemById(Long itemId) {
-        return itemRep.findById(itemId).orElseThrow(
+        Item item = itemRep.findById(itemId).orElseThrow(
                 () -> new NotFoundException(Item.class.toString(), itemId)
         );
+        return setLastAndNextBookings(item);
     }
 
     @Override
@@ -52,16 +55,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Item createItem(Long ownerId, Item item) {
-        try {
-            item.setOwner(userService.findUserById(ownerId));
-            return itemRep.save(item);
-        } catch (DataIntegrityViolationException e) {
-            throw new AlreadyExistsException(Item.class.toString(), item.getId());
-        }
+        item.setOwner(userService.findUserById(ownerId));
+        return itemRep.save(item);
     }
 
     @Override
+    @Transactional
     public Item updateItem(Long userId, Long itemId, Item newItem) {
         Item oldItem = itemRep.findById(itemId).orElseThrow(
                 () -> new NotFoundException(Item.class.toString(), itemId)
@@ -74,10 +75,11 @@ public class ItemServiceImpl implements ItemService {
         oldItem.setDescription(newItem.getDescription() != null ? newItem.getDescription() : oldItem.getDescription());
         oldItem.setAvailable(newItem.getAvailable() != null ? newItem.getAvailable() : oldItem.getAvailable());
 
-        return itemRep.save(oldItem);
+        return oldItem;
     }
 
     @Override
+    @Transactional
     public void deleteItemById(Long userId, Long itemId) {
         Item item = findItemById(itemId);
         if (!item.getOwner().getId().equals(userId)) {
@@ -87,6 +89,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Comment createComment(Long itemId, Long userId, Comment comment) {
         Booking booking = bookingRep.findBookingByItemIdAndBookerIdAndStatusAndEndBefore(
                 itemId, userId, BookingStatus.APPROVED, LocalDateTime.now()
@@ -102,13 +105,15 @@ public class ItemServiceImpl implements ItemService {
         return commentRep.save(comment);
     }
 
-    @Override
-    public List<Comment> findAllComments() {
-        return commentRep.findAll();
-    }
-
-    @Override
-    public List<CommentDto> findAllCommentsByItemId(Long itemId) {
-        return commentRep.findDtoCommentsByItemId(itemId);
+    private Item setLastAndNextBookings(Item item) {
+        item.setLastBooking(
+                bookingRep.findTopByItem_IdAndBooker_IdIsNotAndEndBeforeOrderByEndDesc(
+                        item.getId(), item.getOwner().getId(), LocalDateTime.now()
+                ));
+        item.setNextBooking(
+                bookingRep.findTopByItem_IdAndBooker_IdIsNotAndStartAfterOrderByStart(
+                        item.getId(), item.getOwner().getId(), LocalDateTime.now()
+                ));
+        return item;
     }
 }

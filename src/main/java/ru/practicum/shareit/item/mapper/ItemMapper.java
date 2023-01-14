@@ -1,24 +1,23 @@
 package ru.practicum.shareit.item.mapper;
 
-import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.comment.repository.CommentRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.item.comment.mapper.CommentMapper;
+import ru.practicum.shareit.item.dto.InputItemDto;
+import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper
 @Component
-@RequiredArgsConstructor
 public class ItemMapper {
-    private final BookingRepository bookingRep;
-    private final CommentRepository commentRep;
 
-    public Item mapToItem(ItemDto itemDto) {
+    static public Item mapToItem(InputItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -27,28 +26,36 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDto mapToItemDto(Item item, Long userId) {
-        ItemDto itemDto = ItemDto.builder()
+    static public OutputItemDto mapToItemDto(
+            Item item,
+            Long userId
+    ) {
+        OutputItemDto itemDto = OutputItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                .comments(commentRep.findDtoCommentsByItemId(item.getId()))
+                .comments(item.getComments() != null ?
+                        CommentMapper.mapToCommentDto(item.getComments()) : new ArrayList<>())
                 .build();
 
         if (userId.equals(item.getOwner().getId())) {
-            itemDto.setLastBooking(bookingRep.findLastBooking(item.getId(), LocalDateTime.now()).stream()
-                    .findFirst().orElse(null));
-            itemDto.setNextBooking(bookingRep.findNextBooking(item.getId(), LocalDateTime.now()).stream()
-                            .findFirst().orElse(null));
+            itemDto.setLastBooking(item.getLastBooking() != null ?
+                    BookingMapper.mapToShortBookingDto(item.getLastBooking()) : null);
+            itemDto.setNextBooking(item.getNextBooking() != null ?
+                    BookingMapper.mapToShortBookingDto(item.getNextBooking()) : null);
         }
         return itemDto;
     }
 
-    public ShortItemDto mapToShortItemDto(Item item) {
+    static public ShortItemDto mapToShortItemDto(Item item) {
         return ShortItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .build();
+    }
+
+    static public List<OutputItemDto> mapToItemDto(List<Item> items, Long userId) {
+        return items.stream().map(item -> mapToItemDto(item, userId)).collect(Collectors.toList());
     }
 }
