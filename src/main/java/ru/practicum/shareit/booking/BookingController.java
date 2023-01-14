@@ -26,7 +26,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final UserService userService;
     private final ItemService itemService;
-    
+
     @GetMapping("{bookingId}")
     public OutputBookingDto get(
             @PathVariable Long bookingId,

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Component
 public class ItemMapper {
 
-    static public Item mapToItem(InputItemDto itemDto) {
+    public static Item mapToItem(InputItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -26,7 +26,7 @@ public class ItemMapper {
                 .build();
     }
 
-    static public OutputItemDto mapToItemDto(
+    public static OutputItemDto mapToItemDto(
             Item item,
             Long userId
     ) {
@@ -48,14 +48,14 @@ public class ItemMapper {
         return itemDto;
     }
 
-    static public ShortItemDto mapToShortItemDto(Item item) {
+    public static ShortItemDto mapToShortItemDto(Item item) {
         return ShortItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .build();
     }
 
-    static public List<OutputItemDto> mapToItemDto(List<Item> items, Long userId) {
+    public static List<OutputItemDto> mapToItemDto(List<Item> items, Long userId) {
         return items.stream().map(item -> mapToItemDto(item, userId)).collect(Collectors.toList());
     }
 }

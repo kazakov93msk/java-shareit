@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentMapper {
 
-    static public Comment mapToComment(CommentDto commentDto, User author, Item item) {
+    public static Comment mapToComment(CommentDto commentDto, User author, Item item) {
         return Comment.builder()
                 .id(commentDto.getId())
                 .text(commentDto.getText())
@@ -26,7 +26,7 @@ public class CommentMapper {
                 .build();
     }
 
-    static public CommentDto mapToCommentDto(Comment comment) {
+    public static CommentDto mapToCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -35,7 +35,7 @@ public class CommentMapper {
                 .build();
     }
 
-    static public List<CommentDto> mapToCommentDto(List<Comment> comments) {
+    public static List<CommentDto> mapToCommentDto(List<Comment> comments) {
         return comments.stream().map(CommentMapper::mapToCommentDto).collect(Collectors.toList());
     }
 }
