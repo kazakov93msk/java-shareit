@@ -32,8 +32,8 @@ public class Item {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
-    @OneToMany(mappedBy = "item", orphanRemoval = true, cascade = CascadeType.REMOVE)
-    @ToString.Exclude
+
+    @Transient
     private List<Comment> comments = new ArrayList<>();
 
     @Transient

@@ -7,7 +7,10 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.property.BookingState;
 import ru.practicum.shareit.booking.property.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.exception.NotAvailableException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.OperationAccessException;
+import ru.practicum.shareit.exception.WrongBookingStateException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -21,21 +24,20 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRep;
     private final UserService userService;
 
-
     @Override
     public List<Booking> findAllByBookerId(Long bookerId, BookingState state) {
-        userService.findUserById(bookerId);
+        userService.findById(bookerId);
         return filterUserBookingsByState(bookerId, state, false);
     }
 
     @Override
     public List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state) {
-        userService.findUserById(ownerId);
+        userService.findById(ownerId);
         return filterUserBookingsByState(ownerId, state, true);
     }
 
     @Override
-    public Booking findBookingById(Long userId, Long bookingId) {
+    public Booking findById(Long userId, Long bookingId) {
         Booking booking = bookingRep.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(Booking.class.getName(), bookingId)
         );
@@ -48,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Booking approveBookingById(Long userId, Long bookingId, Boolean isPositiveDecision) {
+    public Booking approveById(Long userId, Long bookingId, Boolean isPositiveDecision) {
         Booking booking = bookingRep.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(Booking.class.getName(), bookingId)
         );
@@ -64,16 +66,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Booking createBooking(Long userId, Booking booking) {
+    public Booking create(Long userId, Booking booking) {
         booking.setStatus(BookingStatus.WAITING);
         if (booking.getItem().getOwner().getId().equals(userId)) {
             throw new OperationAccessException("The owner cannot be a booker.");
-        }
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
-            throw new ValidationDataException("The start time cannot be less then now.");
-        }
-        if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().equals(booking.getStart())) {
-            throw new ValidationDataException("The end time cannot be less or equals than the start time.");
         }
         if (!booking.getItem().getAvailable()) {
             throw new NotAvailableException(Item.class.getSimpleName(), booking.getItem().getId());
@@ -84,17 +80,17 @@ public class BookingServiceImpl implements BookingService {
     private List<Booking> filterUserBookingsByState(Long userId, BookingState state, Boolean isOwner) {
         switch (state) {
             case ALL:
-                return bookingRep.findByUserId(userId, isOwner);
+                return bookingRep.findByUserId(userId, isOwner, bookingRep.START_DESC);
             case WAITING:
             case REJECTED:
                 BookingStatus bookingStatus = BookingStatus.valueOf(state.toString());
-                return bookingRep.findByUserIdAndStatus(userId, isOwner, bookingStatus);
+                return bookingRep.findByUserIdAndStatus(userId, isOwner, bookingStatus, bookingRep.START_DESC);
             case CURRENT:
-                return bookingRep.findByUserCurrent(userId, isOwner, LocalDateTime.now());
+                return bookingRep.findByUserCurrent(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
             case PAST:
-                return bookingRep.findByUserPast(userId, isOwner, LocalDateTime.now());
+                return bookingRep.findByUserPast(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
             case FUTURE:
-                return bookingRep.findByUserFuture(userId, isOwner, LocalDateTime.now());
+                return bookingRep.findByUserFuture(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
             default:
                 throw new WrongBookingStateException("Unknown state: " + state);
         }

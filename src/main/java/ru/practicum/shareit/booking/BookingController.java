@@ -15,7 +15,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -28,15 +27,15 @@ public class BookingController {
     private final ItemService itemService;
 
     @GetMapping("{bookingId}")
-    public OutputBookingDto get(
+    public OutputBookingDto findById(
             @PathVariable Long bookingId,
             @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("GET: Get booking where owner or booker ID = {}.", userId);
-        return BookingMapper.mapToBookingDto(bookingService.findBookingById(userId, bookingId));
+        return BookingMapper.mapToBookingDto(bookingService.findById(userId, bookingId));
     }
 
     @GetMapping
-    public List<OutputBookingDto> getAllByBooker(
+    public List<OutputBookingDto> findAllByBooker(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String state) {
         BookingState bookingState = BookingState.checkState(state);
@@ -58,18 +57,18 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @Valid @RequestBody InputBookingDto bookingDto) {
         log.debug("POST: Create booking {} with owner ID = {}.", bookingDto, userId);
-        User booker = userService.findUserById(userId);
-        Item item = itemService.findItemById(bookingDto.getItemId());
+        User booker = userService.findById(userId);
+        Item item = itemService.findById(bookingDto.getItemId());
         Booking booking = BookingMapper.mapToBooking(bookingDto, item, booker);
-        return BookingMapper.mapToBookingDto(bookingService.createBooking(userId, booking));
+        return BookingMapper.mapToBookingDto(bookingService.create(userId, booking));
     }
 
     @PatchMapping("{bookingId}")
     public OutputBookingDto approve(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long bookingId,
-            @RequestParam @NotNull Boolean approved) {
+            @RequestParam Boolean approved) {
         log.debug("PATCH: Approve booking {} where owner ID = {}. Decision: {}", bookingId, userId, approved);
-        return BookingMapper.mapToBookingDto(bookingService.approveBookingById(userId, bookingId, approved));
+        return BookingMapper.mapToBookingDto(bookingService.approveById(userId, bookingId, approved));
     }
 }

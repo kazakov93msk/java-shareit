@@ -5,13 +5,13 @@ import ru.practicum.shareit.request.model.Request;
 import java.util.List;
 
 public interface RequestService {
-    List<Request> findAllRequests();
+    List<Request> findAll();
 
-    Request findRequestById(Long itemRequestId);
+    Request findById(Long itemRequestId);
 
-    Request createRequest(Request request);
+    Request create(Request request);
 
-    Request updateRequest(Request request);
+    Request update(Request request);
 
-    void deleteRequestById(Long itemRequestId);
+    void deleteById(Long itemRequestId);
 }

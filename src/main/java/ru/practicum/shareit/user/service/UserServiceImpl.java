@@ -16,12 +16,12 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRep;
 
     @Override
-    public List<User> findAllUsers() {
+    public List<User> findAll() {
         return userRep.findAll();
     }
 
     @Override
-    public User findUserById(Long id) {
+    public User findById(Long id) {
         return userRep.findById(id).orElseThrow(
                 () -> new NotFoundException(User.class.toString(), id)
         );
@@ -29,13 +29,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User createUser(User user) {
+    public User create(User user) {
         return userRep.save(user);
     }
 
     @Override
     @Transactional
-    public User updateUser(Long userId, User user) {
+    public User update(Long userId, User user) {
         User oldUser = userRep.findById(userId).orElseThrow(
                 () -> new NotFoundException(User.class.toString(), userId)
         );
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUserById(Long userId) {
+    public void deleteById(Long userId) {
         if (!userRep.existsById(userId)) {
             throw new NotFoundException(User.class.toString(), userId);
         }

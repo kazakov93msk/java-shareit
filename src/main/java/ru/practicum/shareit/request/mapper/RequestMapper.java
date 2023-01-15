@@ -1,10 +1,12 @@
 package ru.practicum.shareit.request.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.mapstruct.Mapper;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.dto.RequestDto;
 
 @Mapper
+@UtilityClass
 public class RequestMapper {
     public static RequestDto toItemRequestDto(Request request) {
         return new RequestDto(

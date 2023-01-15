@@ -9,15 +9,15 @@ public interface ItemService {
 
     List<Item> findByUserId(Long userId);
 
-    Item findItemById(Long itemId);
+    Item findById(Long itemId);
 
-    List<Item> searchItemsByText(String text);
+    List<Item> searchByText(String text);
 
-    Item createItem(Long ownerId, Item item);
+    Item create(Long ownerId, Item item);
 
-    Item updateItem(Long userId, Long itemId, Item item);
+    Item update(Long userId, Long itemId, Item item);
 
-    void deleteItemById(Long userId, Long itemId);
+    void deleteById(Long userId, Long itemId);
 
     Comment createComment(Long itemId, Long userId, Comment comment);
 }

@@ -10,9 +10,9 @@ public interface BookingService {
 
     List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state);
 
-    Booking findBookingById(Long userId, Long bookingId);
+    Booking findById(Long userId, Long bookingId);
 
-    Booking approveBookingById(Long userId, Long bookingId, Boolean decide);
+    Booking approveById(Long userId, Long bookingId, Boolean decide);
 
-    Booking createBooking(Long userId, Booking booking);
+    Booking create(Long userId, Booking booking);
 }

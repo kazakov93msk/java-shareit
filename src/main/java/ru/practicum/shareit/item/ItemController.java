@@ -16,6 +16,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -33,50 +34,54 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public OutputItemDto findItemById(
+    public OutputItemDto findById(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId
     ) {
         log.debug("GET: Get item by ID = {}.", itemId);
-        return ItemMapper.mapToItemDto(itemService.findItemById(itemId), userId);
+        return ItemMapper.mapToItemDto(itemService.findById(itemId), userId);
     }
 
     @GetMapping("/search")
-    public List<OutputItemDto> searchItemByParams(
+    public List<OutputItemDto> searchByParams(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam String text
     ) {
         log.debug("GET: Search item containing text '{}' in title or description.", text);
-        return ItemMapper.mapToItemDto(itemService.searchItemsByText(text), userId);
+        if (text != null && !text.isBlank()) {
+            return ItemMapper.mapToItemDto(itemService.searchByText(text), userId);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @PostMapping
-    public OutputItemDto createItem(
+    public OutputItemDto create(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @Valid @RequestBody InputItemDto itemDto
     ) {
         log.debug("POST: Create item {} with owner ID = {}.", itemDto, userId);
-        return ItemMapper.mapToItemDto(itemService.createItem(userId, ItemMapper.mapToItem(itemDto)), userId);
+        return ItemMapper.mapToItemDto(itemService.create(userId, ItemMapper.mapToItem(itemDto)), userId);
     }
 
     @PatchMapping("/{itemId}")
-    public OutputItemDto updateItem(
+    public OutputItemDto update(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId,
             @RequestBody InputItemDto itemDto
     ) {
         log.debug("PATCH: Update item {} where owner ID = {}.", itemDto, userId);
         Item item = ItemMapper.mapToItem(itemDto);
-        return ItemMapper.mapToItemDto(itemService.updateItem(userId, itemId, item), userId);
+        return ItemMapper.mapToItemDto(itemService.update(userId, itemId, item), userId);
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(
+    public void delete(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId
     ) {
         log.debug("DELETE: Delete item with ID = {} where owner ID = {}.", itemId, userId);
-        itemService.deleteItemById(userId, itemId);
+        itemService.deleteById(userId, itemId);
     }
 
     @PostMapping("/{itemId}/comment")
@@ -86,8 +91,8 @@ public class ItemController {
             @PathVariable Long itemId
     ) {
         log.debug("POST: Create comment {} for item ID = {}.", commentDto, itemId);
-        User author = userService.findUserById(userId);
-        Item item = itemService.findItemById(itemId);
+        User author = userService.findById(userId);
+        Item item = itemService.findById(itemId);
         Comment comment = CommentMapper.mapToComment(commentDto, author, item);
         return CommentMapper.mapToCommentDto(itemService.createComment(itemId, userId, comment));
     }

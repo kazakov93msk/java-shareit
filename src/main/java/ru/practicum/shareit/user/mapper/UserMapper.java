@@ -1,7 +1,7 @@
 package ru.practicum.shareit.user.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper
-@Component
+@UtilityClass
 public class UserMapper {
     public static User mapToUser(UserDto userDto) {
         return User.builder()

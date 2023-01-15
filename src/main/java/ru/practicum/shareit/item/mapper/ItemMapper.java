@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.item.comment.mapper.CommentMapper;
 import ru.practicum.shareit.item.dto.InputItemDto;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper
-@Component
+@UtilityClass
 public class ItemMapper {
 
     public static Item mapToItem(InputItemDto itemDto) {

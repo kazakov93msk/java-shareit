@@ -1,8 +1,7 @@
 package ru.practicum.shareit.booking.mapper;
 
-import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.InputBookingDto;
 import ru.practicum.shareit.booking.dto.OutputBookingDto;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
@@ -17,8 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper
-@Component
-@RequiredArgsConstructor
+@UtilityClass
 public class BookingMapper {
 
     public static OutputBookingDto mapToBookingDto(Booking booking) {

@@ -14,7 +14,6 @@ public enum BookingState {
         try {
             return BookingState.valueOf(state);
         } catch (Exception e) {
-            System.out.println(e.getClass());
             throw new WrongBookingStateException(state);
         }
     }

@@ -19,12 +19,12 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRep;
 
     @Override
-    public List<Request> findAllRequests() {
+    public List<Request> findAll() {
         return requestRep.findAll();
     }
 
     @Override
-    public Request findRequestById(Long requestId) {
+    public Request findById(Long requestId) {
         Request request = requestRep.findById(requestId).orElseThrow(
                 () -> new NotFoundException(Request.class.toString(), requestId)
         );
@@ -34,7 +34,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public Request createRequest(Request request) {
+    public Request create(Request request) {
         if (request.getId() != null && requestRep.existsById(request.getId())) {
             throw new AlreadyExistsException(Request.class.toString(), request.getId());
         }
@@ -45,7 +45,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public Request updateRequest(Request request) {
+    public Request update(Request request) {
         if (!requestRep.existsById(request.getId())) {
             throw new NotFoundException(Request.class.toString(), request.getId());
         }
@@ -55,7 +55,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public void deleteRequestById(Long requestId) {
+    public void deleteById(Long requestId) {
         if (!requestRep.existsById(requestId)) {
             throw new NotFoundException(Request.class.toString(), requestId);
         }
