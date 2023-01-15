@@ -109,7 +109,7 @@ public class ItemServiceImpl implements ItemService {
         return commentRep.save(comment);
     }
 
-    private Item setLastAndNextBookings(Item item) {//, List<Booking> prevBookings, List<Booking> nextBookings) {
+    private Item setLastAndNextBookings(Item item) {
         item.setLastBooking(
                 bookingRep.findTopByItemIdAndStatusAndStartLessThanEqual(
                         item.getId(),

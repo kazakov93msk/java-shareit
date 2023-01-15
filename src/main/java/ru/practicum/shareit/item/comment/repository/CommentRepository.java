@@ -11,5 +11,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Sort CREATED_DESC = Sort.by(Sort.Direction.DESC, "created");
 
     List<Comment> findByItemId(Long itemId, Sort sort);
+
     List<Comment> findByItemIn(List<Item> items, Sort sort);
 }
