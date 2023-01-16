@@ -69,15 +69,15 @@ public class ItemServiceImpl implements ItemService {
             throw new OperationAccessException(Item.class.toString(), userId, itemId);
         }
 
-        oldItem.setName(newItem.getName() != null && !newItem.getName().isBlank()
-                ? newItem.getName()
-                : oldItem.getName()
-        );
-        oldItem.setDescription(newItem.getDescription() != null && !newItem.getDescription().isBlank()
-                ? newItem.getDescription()
-                : oldItem.getDescription()
-        );
-        oldItem.setAvailable(newItem.getAvailable() != null ? newItem.getAvailable() : oldItem.getAvailable());
+        if (newItem.getName() != null && !newItem.getName().isBlank()) {
+            oldItem.setName(newItem.getName());
+        }
+        if (newItem.getDescription() != null && !newItem.getDescription().isBlank()) {
+            oldItem.setDescription(newItem.getDescription());
+        }
+        if (newItem.getAvailable() != null) {
+            oldItem.setAvailable(newItem.getAvailable());
+        }
 
         return oldItem;
     }
@@ -138,13 +138,12 @@ public class ItemServiceImpl implements ItemService {
             item.setComments(comments.get(item));
             if (bookings.get(item) != null) {
                 item.setLastBooking(bookings.get(item).stream()
-                        .filter(booking -> booking.getStart().isBefore(now())
-                                || booking.getStart().isEqual(now()))
+                        .filter(booking -> !booking.getStart().isAfter(now()))
                         .findFirst().orElse(null)
                 );
                 item.setNextBooking(bookings.get(item).stream()
                         .filter(booking -> booking.getStart().isAfter(now()))
-                        .findFirst().orElse(null)
+                        .reduce((first, last) -> last).orElse(null)
                 );
             }
         }

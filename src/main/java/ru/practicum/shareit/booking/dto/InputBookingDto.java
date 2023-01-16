@@ -17,10 +17,8 @@ import java.time.LocalDateTime;
 public class InputBookingDto {
     private Long id;
     @FutureOrPresent
-    @NotNull
     private LocalDateTime start;
     @Future
-    @NotNull
     private LocalDateTime end;
     @NotNull
     private Long itemId;

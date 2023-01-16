@@ -17,60 +17,60 @@ import java.util.Objects;
 public class ErrorHandler {
 
     @ExceptionHandler
-    public ResponseEntity<?> handleValidation(final ValidationException e) {
+    public ResponseEntity<Map<String, String>> handleValidation(final ValidationException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleAlreadyExist(final AlreadyExistsException e) {
+    public ResponseEntity<Map<String, String>> handleAlreadyExist(final AlreadyExistsException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", Objects.requireNonNull(e.getMessage())),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleNotFound(final NotFoundException e) {
+    public ResponseEntity<Map<String, String>> handleNotFound(final NotFoundException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleOperationAccess(final OperationAccessException e) {
+    public ResponseEntity<Map<String, String>> handleOperationAccess(final OperationAccessException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleNotAvailable(final NotAvailableException e) {
+    public ResponseEntity<Map<String, String>> handleNotAvailable(final NotAvailableException e) {
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleValidation(final ValidationDataException e) {
+    public ResponseEntity<Map<String, String>> handleValidation(final ValidationDataException e) {
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleSpringValidation(final MethodArgumentNotValidException e) {
+    public ResponseEntity<Map<String, String>> handleSpringValidation(final MethodArgumentNotValidException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleConstraintViolation(final ConstraintViolationException e) {
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(final ConstraintViolationException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleWrongBookingState(final WrongBookingStateException e) {
+    public ResponseEntity<Map<String, String>> handleWrongBookingState(final WrongBookingStateException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error",  e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleInternalServerError(final Throwable e) {
+    public ResponseEntity<Map<String, String>> handleInternalServerError(final Throwable e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }

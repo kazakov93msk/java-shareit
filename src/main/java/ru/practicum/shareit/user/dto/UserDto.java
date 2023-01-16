@@ -16,5 +16,6 @@ public class UserDto {
     @NotBlank(groups = UserValidator.Create.class)
     @Email(groups = {UserValidator.Create.class, UserValidator.Update.class})
     private String email;
+    @NotBlank(groups = UserValidator.Create.class)
     private String name;
 }
