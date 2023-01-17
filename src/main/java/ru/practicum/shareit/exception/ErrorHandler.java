@@ -9,50 +9,69 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice("ru.practicum.shareit")
 @Slf4j
 public class ErrorHandler {
 
     @ExceptionHandler
-    public ResponseEntity<String> handleValidation(final ValidationException e) {
+    public ResponseEntity<Map<String, String>> handleValidation(final ValidationException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleAlreadyExist(final AlreadyExistsException e) {
+    public ResponseEntity<Map<String, String>> handleAlreadyExist(final AlreadyExistsException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(Map.of("error", Objects.requireNonNull(e.getMessage())),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleNotFound(final NotFoundException e) {
+    public ResponseEntity<Map<String, String>> handleNotFound(final NotFoundException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleNotFound(final OperationAccessException e) {
+    public ResponseEntity<Map<String, String>> handleOperationAccess(final OperationAccessException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleSpringValidation(final MethodArgumentNotValidException e) {
-        log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Map<String, String>> handleNotAvailable(final NotAvailableException e) {
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleConstraintViolation(final ConstraintViolationException e) {
-        log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<Map<String, String>> handleValidation(final ValidationDataException e) {
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleInternalServerError(final Throwable e) {
+    public ResponseEntity<Map<String, String>> handleSpringValidation(final MethodArgumentNotValidException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(final ConstraintViolationException e) {
+        log.debug(e.getMessage());
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleWrongBookingState(final WrongBookingStateException e) {
+        log.debug(e.getMessage());
+        return new ResponseEntity<>(Map.of("error",  e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleInternalServerError(final Throwable e) {
+        log.debug(e.getMessage());
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
