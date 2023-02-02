@@ -35,7 +35,8 @@ public class UserController {
     public UserDto create(@Validated(UserValidator.Create.class) @RequestBody UserDto userDto) {
         log.debug("POST: Create user - {}.", userDto);
         User user = UserMapper.mapToUser(userDto);
-        return UserMapper.mapToUserDto(userService.create(user));
+        user = userService.create(user);
+        return UserMapper.mapToUserDto(user);
     }
 
     @PatchMapping("/{userId}")

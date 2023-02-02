@@ -10,6 +10,8 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = BookingDateValidator.class)
 public @interface StartBeforeEndValidation {
     String message() default "The end time cannot be less or equals than the start time.";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

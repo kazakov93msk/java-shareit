@@ -12,6 +12,7 @@ import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -26,11 +27,16 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
+    private final RequestService requestService;
 
     @GetMapping
-    public List<OutputItemDto> findAllByUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<OutputItemDto> findAllByUserId(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Integer size
+    ) {
         log.debug("GET: Get all items where owner ID = {}.", userId);
-        return ItemMapper.mapToItemDto(itemService.findByUserId(userId), userId);
+        return ItemMapper.mapToItemDto(itemService.findByUserId(userId, from, size), userId);
     }
 
     @GetMapping("/{itemId}")
@@ -45,11 +51,13 @@ public class ItemController {
     @GetMapping("/search")
     public List<OutputItemDto> searchByParams(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam String text
+            @RequestParam String text,
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Integer size
     ) {
         log.debug("GET: Search item containing text '{}' in title or description.", text);
         if (text != null && !text.isBlank()) {
-            return ItemMapper.mapToItemDto(itemService.searchByText(text), userId);
+            return ItemMapper.mapToItemDto(itemService.searchByText(text, from, size), userId);
         } else {
             return Collections.emptyList();
         }
@@ -60,8 +68,12 @@ public class ItemController {
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @Valid @RequestBody InputItemDto itemDto
     ) {
+        Item item = ItemMapper.mapToItem(itemDto);
+        if (itemDto.getRequestId() != null) {
+            item.setRequest(requestService.findById(itemDto.getRequestId()));
+        }
         log.debug("POST: Create item {} with owner ID = {}.", itemDto, userId);
-        return ItemMapper.mapToItemDto(itemService.create(userId, ItemMapper.mapToItem(itemDto)), userId);
+        return ItemMapper.mapToItemDto(itemService.create(userId, item), userId);
     }
 
     @PatchMapping("/{itemId}")
@@ -72,6 +84,9 @@ public class ItemController {
     ) {
         log.debug("PATCH: Update item {} where owner ID = {}.", itemDto, userId);
         Item item = ItemMapper.mapToItem(itemDto);
+        if (itemDto.getRequestId() != null) {
+            item.setRequest(requestService.findById(itemDto.getRequestId()));
+        }
         return ItemMapper.mapToItemDto(itemService.update(userId, itemId, item), userId);
     }
 

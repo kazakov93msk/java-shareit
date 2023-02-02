@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
@@ -14,13 +15,12 @@ import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.utility.PageableBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-
-import static java.time.LocalDateTime.now;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,24 +32,26 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
 
     @Override
-    public List<Item> findByUserId(Long userId) {
-        userService.findById(userId);
-        List<Item> items = itemRep.findAllByOwner_Id(userId);
+    public List<Item> findByUserId(Long userId, Long from, Integer size) {
+        userService.validateExistence(userId);
+        Pageable pageable = PageableBuilder.getPageable(from, size, itemRep.ID_ASC);
+        List<Item> items = itemRep.findAllByOwnerId(userId, pageable).getContent();
         return setLastAndNextBookingsAndComments(items);
     }
 
     @Override
     public Item findById(Long itemId) {
         Item item = itemRep.findById(itemId).orElseThrow(
-                () -> new NotFoundException(Item.class.toString(), itemId)
+                () -> new NotFoundException(Item.class.getSimpleName(), itemId)
         );
         item.setComments(commentRep.findByItemId(itemId, commentRep.CREATED_DESC));
         return setLastAndNextBookings(item);
     }
 
     @Override
-    public List<Item> searchByText(String text) {
-        return itemRep.search(text.toLowerCase());
+    public List<Item> searchByText(String text, Long from, Integer size) {
+        Pageable pageable = PageableBuilder.getPageable(from, size, itemRep.ID_ASC);
+        return itemRep.search(text.toLowerCase(), pageable).getContent();
     }
 
     @Override
@@ -63,10 +65,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item update(Long userId, Long itemId, Item newItem) {
         Item oldItem = itemRep.findById(itemId).orElseThrow(
-                () -> new NotFoundException(Item.class.toString(), itemId)
+                () -> new NotFoundException(Item.class.getSimpleName(), itemId)
         );
         if (!oldItem.getOwner().getId().equals(userId)) {
-            throw new OperationAccessException(Item.class.toString(), userId, itemId);
+            throw new OperationAccessException(Item.class.getSimpleName(), userId, itemId);
         }
 
         if (newItem.getName() != null && !newItem.getName().isBlank()) {
@@ -87,7 +89,7 @@ public class ItemServiceImpl implements ItemService {
     public void deleteById(Long userId, Long itemId) {
         Item item = findById(itemId);
         if (!item.getOwner().getId().equals(userId)) {
-            throw new OperationAccessException(Item.class.toString(), userId, itemId);
+            throw new OperationAccessException(Item.class.getSimpleName(), userId, itemId);
         }
         itemRep.deleteById(itemId);
     }
@@ -96,7 +98,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Comment createComment(Long itemId, Long userId, Comment comment) {
         Booking booking = bookingRep.findBookingByItemIdAndBookerIdAndStatusAndEndBefore(
-                itemId, userId, BookingStatus.APPROVED, now()
+                itemId, userId, BookingStatus.APPROVED, LocalDateTime.now()
         );
         if (booking == null) {
             throw new NotAvailableException(
@@ -105,7 +107,7 @@ public class ItemServiceImpl implements ItemService {
         }
         comment.setItem(booking.getItem());
         comment.setAuthor(booking.getBooker());
-        comment.setCreated(now());
+        comment.setCreated(LocalDateTime.now());
         return commentRep.save(comment);
     }
 
@@ -114,35 +116,35 @@ public class ItemServiceImpl implements ItemService {
                 bookingRep.findTopByItemIdAndStatusAndStartLessThanEqual(
                         item.getId(),
                         BookingStatus.APPROVED,
-                        now(),
+                        LocalDateTime.now(),
                         bookingRep.START_DESC)
         );
         item.setNextBooking(
                 bookingRep.findTopByItemIdAndStatusAndStartAfter(
-                                item.getId(),
-                                BookingStatus.APPROVED,
-                                now(),
-                                bookingRep.START_DESC)
+                        item.getId(),
+                        BookingStatus.APPROVED,
+                        LocalDateTime.now(),
+                        bookingRep.START_DESC)
         );
         return item;
     }
 
     private List<Item> setLastAndNextBookingsAndComments(List<Item> items) {
         Map<Item, List<Booking>> bookings = bookingRep.findByItemInAndStatus(
-                items, BookingStatus.APPROVED, bookingRep.START_DESC).stream()
-                .collect(groupingBy(Booking::getItem, toList()));
+                        items, BookingStatus.APPROVED, bookingRep.START_DESC).stream()
+                .collect(Collectors.groupingBy(Booking::getItem, Collectors.toList()));
         Map<Item, List<Comment>> comments = commentRep.findByItemIn(items, commentRep.CREATED_DESC).stream()
-                .collect(groupingBy(Comment::getItem, toList()));
+                .collect(Collectors.groupingBy(Comment::getItem, Collectors.toList()));
 
         for (Item item : items) {
             item.setComments(comments.get(item));
             if (bookings.get(item) != null) {
                 item.setLastBooking(bookings.get(item).stream()
-                        .filter(booking -> !booking.getStart().isAfter(now()))
+                        .filter(booking -> !booking.getStart().isAfter(LocalDateTime.now()))
                         .findFirst().orElse(null)
                 );
                 item.setNextBooking(bookings.get(item).stream()
-                        .filter(booking -> booking.getStart().isAfter(now()))
+                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
                         .reduce((first, last) -> last).orElse(null)
                 );
             }

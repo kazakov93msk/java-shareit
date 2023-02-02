@@ -7,6 +7,8 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
@@ -35,4 +37,21 @@ public class Booking {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Booking booking = (Booking) o;
+        return Objects.equals(id, booking.id)
+                && Objects.equals(start.truncatedTo(ChronoUnit.MINUTES), booking.start.truncatedTo(ChronoUnit.MINUTES))
+                && Objects.equals(end.truncatedTo(ChronoUnit.MINUTES), booking.end.truncatedTo(ChronoUnit.MINUTES))
+                && Objects.equals(item.getId(), booking.item.getId())
+                && status == booking.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, start, end, item, status);
+    }
 }

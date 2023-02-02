@@ -37,19 +37,25 @@ public class BookingController {
     @GetMapping
     public List<OutputBookingDto> findAllByBooker(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+            @RequestParam(name = "state", defaultValue = "ALL") String state,
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Integer size
+    ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where booker ID = {}.", userId);
-        return BookingMapper.mapToBookingDto(bookingService.findAllByBookerId(userId, bookingState));
+        return BookingMapper.mapToBookingDto(bookingService.findAllByBookerId(userId, bookingState, from, size));
     }
 
     @GetMapping("owner")
     public List<OutputBookingDto> getAllByItemsOwner(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+            @RequestParam(name = "state", defaultValue = "ALL") String state,
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Integer size
+    ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where owner ID = {}.", userId);
-        return BookingMapper.mapToBookingDto(bookingService.findAllByItemsOwnerId(userId, bookingState));
+        return BookingMapper.mapToBookingDto(bookingService.findAllByItemsOwnerId(userId, bookingState, from, size));
     }
 
     @PostMapping

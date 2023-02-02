@@ -66,7 +66,7 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<Map<String, String>> handleWrongBookingState(final WrongBookingStateException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(Map.of("error",  e.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler

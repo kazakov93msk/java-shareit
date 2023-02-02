@@ -6,9 +6,9 @@ import ru.practicum.shareit.booking.property.BookingState;
 import java.util.List;
 
 public interface BookingService {
-    List<Booking> findAllByBookerId(Long bookerId, BookingState state);
+    List<Booking> findAllByBookerId(Long bookerId, BookingState state, Long from, Integer size);
 
-    List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state);
+    List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state, Long from, Integer size);
 
     Booking findById(Long userId, Long bookingId);
 
