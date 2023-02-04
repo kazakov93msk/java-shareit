@@ -72,12 +72,15 @@ public class BookingControllerTest {
 
     @Test
     void getAllByItemsOwner() throws Exception {
-        when(bookingService.findAllByItemsOwnerId(USER_ID, BookingState.ALL, null, null))
+        when(bookingService.findAllByItemsOwnerId(any(), any(), any(), any()))
                 .thenReturn(emptyList());
 
         mvc.perform(getGetReq(BOOKING_DEFAULT_PATH + "/owner", USER_ID))
                 .andExpect(OK)
                 .andExpect(jsonPath("$", hasSize(0)));
+
+        mvc.perform(getGetReq(BOOKING_DEFAULT_PATH + "/owner?state=UNDEFINED", USER_ID))
+                .andExpect(BAD_REQUEST);
     }
 
     @Test

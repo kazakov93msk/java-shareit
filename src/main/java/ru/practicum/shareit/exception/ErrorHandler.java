@@ -47,11 +47,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<Map<String, String>> handleValidation(final ValidationDataException e) {
-        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
     public ResponseEntity<Map<String, String>> handleSpringValidation(final MethodArgumentNotValidException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);

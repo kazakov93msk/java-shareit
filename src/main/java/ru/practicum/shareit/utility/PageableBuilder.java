@@ -4,7 +4,6 @@ import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.IllegalPageArgumentException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.repository.RequestRepository;
@@ -27,7 +26,7 @@ public class PageableBuilder {
             throw new IllegalPageArgumentException("Parameter 'size' cannot be less than 0.");
         }
 
-        if (sort.isEmpty()) {
+        if (sort == null) {
             throw new IllegalPageArgumentException("Parameter 'sort' cannot be is null.");
         }
 
@@ -41,9 +40,5 @@ public class PageableBuilder {
 
     public static Pageable getRequestDefaultPageable() {
         return getPageable(DEFAULT_START, DEFAULT_SIZE, RequestRepository.CREATED_DESC);
-    }
-
-    public static Pageable getBookingDefaultPageable() {
-        return getPageable(DEFAULT_START, DEFAULT_SIZE, BookingRepository.START_DESC);
     }
 }
