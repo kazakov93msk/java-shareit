@@ -28,6 +28,8 @@ import static ru.practicum.shareit.util.ItemTestUtil.getItem;
 import static ru.practicum.shareit.util.TestUtil.*;
 import static ru.practicum.shareit.util.UserTestUtil.USER_ID;
 import static ru.practicum.shareit.util.UserTestUtil.getUser;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_SIZE;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_START;
 
 @WebMvcTest(controllers = BookingController.class)
 @AutoConfigureMockMvc
@@ -62,7 +64,7 @@ public class BookingControllerTest {
 
     @Test
     void findAllByBooker() throws Exception {
-        when(bookingService.findAllByBookerId(USER_ID, BookingState.WAITING, null, null))
+        when(bookingService.findAllByBookerId(USER_ID, BookingState.WAITING, DEFAULT_START, DEFAULT_SIZE))
                 .thenReturn(getBookingsList(dt));
 
         mvc.perform(getGetReq(BOOKING_DEFAULT_PATH + "?state=WAITING", USER_ID))

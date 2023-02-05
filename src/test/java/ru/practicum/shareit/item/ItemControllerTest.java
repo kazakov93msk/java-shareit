@@ -26,6 +26,8 @@ import static ru.practicum.shareit.util.ItemTestUtil.*;
 import static ru.practicum.shareit.util.TestUtil.*;
 import static ru.practicum.shareit.util.UserTestUtil.USER_ID;
 import static ru.practicum.shareit.util.UserTestUtil.getUser;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_SIZE;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_START;
 
 @WebMvcTest(controllers = ItemController.class)
 @AutoConfigureMockMvc
@@ -43,7 +45,7 @@ class ItemControllerTest {
 
     @Test
     void findAllByUserId() throws Exception {
-        when(itemService.findByUserId(USER_ID, null, null)).thenReturn(List.of(getItem()));
+        when(itemService.findByUserId(USER_ID, DEFAULT_START, DEFAULT_SIZE)).thenReturn(List.of(getItem()));
 
         mvc.perform(getGetReq(ITEM_DEFAULT_PATH, USER_ID))
                 .andExpect(OK)
@@ -62,7 +64,7 @@ class ItemControllerTest {
 
     @Test
     void searchByParams() throws Exception {
-        when(itemService.searchByText("escr", null, null)).thenReturn(List.of(getItem()));
+        when(itemService.searchByText("escr", DEFAULT_START, DEFAULT_SIZE)).thenReturn(List.of(getItem()));
 
         mvc.perform(getGetReq(ITEM_DEFAULT_PATH + "/search?text=escr", ANOTHER_ITEM_ID))
                 .andExpect(OK)

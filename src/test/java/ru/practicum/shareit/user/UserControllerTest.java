@@ -78,6 +78,14 @@ class UserControllerTest {
                         .content(mapper.writeValueAsString(userDto)))
                 .andExpect(OK)
                 .andExpect(jsonPath("$.id", is(user.getId()), Long.class));
+
+        mvc.perform(getPostReq(USER_DEFAULT_PATH, null)
+                .content(mapper.writeValueAsString(getInvalidNameUserDto())))
+                .andExpect(BAD_REQUEST);
+
+        mvc.perform(getPostReq(USER_DEFAULT_PATH, null)
+                        .content(mapper.writeValueAsString(getInvalidEmailUserDto())))
+                .andExpect(BAD_REQUEST);
     }
 
     @Test

@@ -12,6 +12,7 @@ public class UserTestUtil {
     public static final String USER_EMAIL = "first@test.ru";
     public static final Long ANOTHER_USER_ID = 2L;
     public static final String ANOTHER_USER_NAME = "second";
+    public static final String ANOTHER_USER_EMAIL = "second@test.ru";
     public static final String USER_PATH = USER_DEFAULT_PATH + "/" + USER_ID;
     public static final String ANOTHER_USER_PATH = USER_DEFAULT_PATH + "/" + ANOTHER_USER_ID;
 
@@ -34,5 +35,21 @@ public class UserTestUtil {
 
     public static UserDto getUpdatedUserDto() {
         return new UserDto(null, USER_EMAIL, ANOTHER_USER_NAME);
+    }
+
+    public static UserDto getInvalidNameUserDto() {
+        return new UserDto(null, USER_EMAIL, "");
+    }
+
+    public static UserDto getInvalidEmailUserDto() {
+        return new UserDto(null,"invalidemail.com", USER_NAME);
+    }
+
+    public static User getNewUser() {
+        return new User(null, USER_EMAIL, USER_NAME);
+    }
+
+    public static User getNewAnotherUser() {
+        return new User(null, ANOTHER_USER_EMAIL, ANOTHER_USER_NAME);
     }
 }

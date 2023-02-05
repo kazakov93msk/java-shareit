@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.comment.mapper.CommentMapper;
@@ -17,6 +18,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
@@ -32,8 +35,8 @@ public class ItemController {
     @GetMapping
     public List<OutputItemDto> findAllByUserId(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(required = false) Long from,
-            @RequestParam(required = false) Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @PositiveOrZero @RequestParam(defaultValue = "30") Integer size
     ) {
         log.debug("GET: Get all items where owner ID = {}.", userId);
         return ItemMapper.mapToItemDto(itemService.findByUserId(userId, from, size), userId);
@@ -52,8 +55,8 @@ public class ItemController {
     public List<OutputItemDto> searchByParams(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam String text,
-            @RequestParam(required = false) Long from,
-            @RequestParam(required = false) Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @PositiveOrZero @RequestParam(defaultValue = "30") Integer size
     ) {
         log.debug("GET: Search item containing text '{}' in title or description.", text);
         if (text != null && !text.isBlank()) {

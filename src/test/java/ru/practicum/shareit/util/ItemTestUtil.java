@@ -5,6 +5,7 @@ import ru.practicum.shareit.item.dto.InputItemDto;
 import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 @UtilityClass
 public class ItemTestUtil {
@@ -15,7 +16,6 @@ public class ItemTestUtil {
     public static final Long ANOTHER_ITEM_ID = 2L;
     public static final String ANOTHER_ITEM_DESCR = "anotherItemDescr";
     public static final String ITEM_PATH = ITEM_DEFAULT_PATH + "/" + ITEM_ID;
-    public static final String ANOTHER_ITEM_PATH = ITEM_DEFAULT_PATH + "/" + ANOTHER_ITEM_ID;
 
     public static Item getItem() {
         return Item.builder()
@@ -48,5 +48,14 @@ public class ItemTestUtil {
 
     public static OutputItemDto getOutputDto(Long userId) {
         return ItemMapper.mapToItemDto(getItem(), userId);
+    }
+
+    public static Item getNewItem(User owner) {
+        return Item.builder()
+                .name(ITEM_NAME)
+                .description(ITEM_DESCR)
+                .available(true)
+                .owner(owner)
+                .build();
     }
 }

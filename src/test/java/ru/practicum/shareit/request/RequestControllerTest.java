@@ -23,6 +23,8 @@ import static ru.practicum.shareit.util.RequestTestUtil.*;
 import static ru.practicum.shareit.util.TestUtil.*;
 import static ru.practicum.shareit.util.UserTestUtil.USER_ID;
 import static ru.practicum.shareit.util.UserTestUtil.getAnotherUser;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_SIZE;
+import static ru.practicum.shareit.utility.PageableBuilder.DEFAULT_START;
 
 @WebMvcTest(controllers = RequestController.class)
 @AutoConfigureMockMvc
@@ -63,7 +65,7 @@ public class RequestControllerTest {
 
     @Test
     void findAll() throws Exception {
-        when(requestService.findAll(USER_ID, null, null)).thenReturn(getRequestsList(dt));
+        when(requestService.findAll(USER_ID, DEFAULT_START, DEFAULT_SIZE)).thenReturn(getRequestsList(dt));
 
         mvc.perform(getGetReq(REQUEST_DEFAULT_PATH + "/all", USER_ID))
                 .andExpect(OK)

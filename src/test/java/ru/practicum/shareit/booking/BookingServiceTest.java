@@ -113,7 +113,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    void shoulReturnBookingOrThrowWhenCallFindById() {
+    void shouldReturnBookingOrThrowWhenCallFindById() {
         when(bookingRep.findById(BOOKING_ID)).thenReturn(Optional.of(getBooking(dt)));
         when(bookingRep.findById(ANOTHER_BOOKING_ID)).thenReturn(Optional.empty());
 

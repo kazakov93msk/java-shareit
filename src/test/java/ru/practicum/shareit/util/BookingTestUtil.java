@@ -8,6 +8,8 @@ import ru.practicum.shareit.booking.dto.OutputBookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.property.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -77,5 +79,15 @@ public class BookingTestUtil {
 
     public static Page<Booking> getBookingsPage(LocalDateTime dt) {
         return new PageImpl<>(getBookingsList(dt));
+    }
+
+    public static Booking getNewBooking(Item item, User booker, BookingStatus status, LocalDateTime dt) {
+        return Booking.builder()
+                .start(dt)
+                .end(dt.plusDays(2))
+                .item(item)
+                .booker(booker)
+                .status(status)
+                .build();
     }
 }

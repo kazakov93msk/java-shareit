@@ -57,6 +57,7 @@ public class RequestServiceImpl implements RequestService {
         }
         request = requestRep.save(request);
         log.debug("RequestService: Request {} created.", request);
+        request.setItems(itemRep.findAllByRequestId(request.getId()));
         return request;
     }
 
@@ -65,7 +66,7 @@ public class RequestServiceImpl implements RequestService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(Item::getRequest, Collectors.toList()));
         for (Request request : requests) {
-            request.setItems(items.get(request));
+            request.setItems(items.getOrDefault(request, List.of()));
         }
         return requests;
     }
