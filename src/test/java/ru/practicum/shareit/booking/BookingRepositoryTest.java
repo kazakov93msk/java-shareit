@@ -110,7 +110,7 @@ public class BookingRepositoryTest {
     }
 
     @Test
-    void callFindByUserCurrent () {
+    void callFindByUserCurrent() {
         User owner = getNewUser();
         User booker = getNewAnotherUser();
         Item item = getNewItem(owner);
@@ -134,7 +134,7 @@ public class BookingRepositoryTest {
     }
 
     @Test
-    void callFindByUserPast () {
+    void callFindByUserPast() {
         User owner = getNewUser();
         User booker = getNewAnotherUser();
         Item item = getNewItem(owner);
@@ -158,7 +158,7 @@ public class BookingRepositoryTest {
     }
 
     @Test
-    void callFindByUserFuture () {
+    void callFindByUserFuture() {
         User owner = getNewUser();
         User booker = getNewAnotherUser();
         Item item = getNewItem(owner);

@@ -28,7 +28,7 @@ public class BookingJsonTest {
     @Autowired
     private JacksonTester<OutputBookingDto> jsonOutput;
     private final LocalDateTime dt = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
-    private final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final InputBookingDto inputBookingDto = new InputBookingDto(BOOKING_ID, dt, dt.plusDays(1), ITEM_ID);
     private final OutputBookingDto outputBookingDto = getOutputBookingDto(dt);
@@ -37,8 +37,8 @@ public class BookingJsonTest {
     void bookingInputDtoTest() throws IOException {
         JsonContent<InputBookingDto> jsonDto = jsonInput.write(inputBookingDto);
         assertThat(jsonDto).extractingJsonPathNumberValue("$.id").isEqualTo(BOOKING_ID.intValue());
-        assertThat(jsonDto).extractingJsonPathStringValue("$.start").isEqualTo(dt.format(FORMATTER));
-        assertThat(jsonDto).extractingJsonPathStringValue("$.end").isEqualTo(dt.plusDays(1).format(FORMATTER));
+        assertThat(jsonDto).extractingJsonPathStringValue("$.start").isEqualTo(dt.format(formatter));
+        assertThat(jsonDto).extractingJsonPathStringValue("$.end").isEqualTo(dt.plusDays(1).format(formatter));
         assertThat(jsonDto).extractingJsonPathNumberValue("$.itemId").isEqualTo(ITEM_ID.intValue());
 
         InputBookingDto parsed = jsonInput.parse(jsonDto.getJson()).getObject();
@@ -51,8 +51,8 @@ public class BookingJsonTest {
 
         JsonContent<OutputBookingDto> jsonDto = jsonOutput.write(outputBookingDto);
         assertThat(jsonDto).extractingJsonPathNumberValue("$.id").isEqualTo(BOOKING_ID.intValue());
-        assertThat(jsonDto).extractingJsonPathStringValue("$.start").isEqualTo(dt.format(FORMATTER));
-        assertThat(jsonDto).extractingJsonPathStringValue("$.end").isEqualTo(dt.plusDays(1).format(FORMATTER));
+        assertThat(jsonDto).extractingJsonPathStringValue("$.start").isEqualTo(dt.format(formatter));
+        assertThat(jsonDto).extractingJsonPathStringValue("$.end").isEqualTo(dt.plusDays(1).format(formatter));
         assertThat(jsonDto).extractingJsonPathNumberValue("$.item.id").isEqualTo(ITEM_ID.intValue());
         assertThat(jsonDto).extractingJsonPathNumberValue("$.booker.id").isEqualTo(USER_ID.intValue());
 
