@@ -23,7 +23,7 @@ public class RequestJsonTest {
     @Autowired
     private JacksonTester<RequestDto> jsonInput;
     private final LocalDateTime dt = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
-    private final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final RequestDto requestDto = getRequestDto(dt);
 
@@ -36,7 +36,7 @@ public class RequestJsonTest {
         assertThat(jsonDto).extractingJsonPathNumberValue("$.id").isEqualTo(REQUEST_ID.intValue());
         assertThat(jsonDto).extractingJsonPathStringValue("$.description").isEqualTo(REQUEST_DESCR);
         assertThat(jsonDto).extractingJsonPathNumberValue("$.creator.id").isEqualTo(USER_ID.intValue());
-        assertThat(jsonDto).extractingJsonPathStringValue("$.created").isEqualTo(dt.format(FORMATTER));
+        assertThat(jsonDto).extractingJsonPathStringValue("$.created").isEqualTo(dt.format(formatter));
         assertThat(jsonDto).extractingJsonPathNumberValue("$.items.length()").isEqualTo(1);
 
         RequestDto parsed = jsonInput.parse(jsonDto.getJson()).getObject();
