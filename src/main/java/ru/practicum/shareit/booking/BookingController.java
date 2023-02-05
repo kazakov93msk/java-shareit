@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.InputBookingDto;
 import ru.practicum.shareit.booking.dto.OutputBookingDto;
@@ -15,12 +16,14 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class BookingController {
     private final BookingService bookingService;
     private final UserService userService;
@@ -37,19 +40,25 @@ public class BookingController {
     @GetMapping
     public List<OutputBookingDto> findAllByBooker(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+            @RequestParam(name = "state", defaultValue = "ALL") String state,
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @PositiveOrZero @RequestParam(defaultValue = "30") Integer size
+    ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where booker ID = {}.", userId);
-        return BookingMapper.mapToBookingDto(bookingService.findAllByBookerId(userId, bookingState));
+        return BookingMapper.mapToBookingDto(bookingService.findAllByBookerId(userId, bookingState, from, size));
     }
 
     @GetMapping("owner")
     public List<OutputBookingDto> getAllByItemsOwner(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String state) {
+            @RequestParam(name = "state", defaultValue = "ALL") String state,
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @PositiveOrZero @RequestParam(defaultValue = "30") Integer size
+    ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where owner ID = {}.", userId);
-        return BookingMapper.mapToBookingDto(bookingService.findAllByItemsOwnerId(userId, bookingState));
+        return BookingMapper.mapToBookingDto(bookingService.findAllByItemsOwnerId(userId, bookingState, from, size));
     }
 
     @PostMapping

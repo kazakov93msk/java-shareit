@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,10 +36,12 @@ public class ItemMapper {
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 .comments(item.getComments() != null ?
-                        CommentMapper.mapToCommentDto(item.getComments()) : new ArrayList<>())
+                        CommentMapper.mapToCommentDto(item.getComments()) : Collections.emptyList())
+                .requestId(item.getRequest() != null ?
+                        item.getRequest().getId() : null)
                 .build();
 
-        if (userId.equals(item.getOwner().getId())) {
+        if (userId != null && userId.equals(item.getOwner().getId())) {
             itemDto.setLastBooking(item.getLastBooking() != null ?
                     BookingMapper.mapToShortBookingDto(item.getLastBooking()) : null);
             itemDto.setNextBooking(item.getNextBooking() != null ?

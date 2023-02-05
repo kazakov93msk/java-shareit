@@ -1,7 +1,9 @@
 package ru.practicum.shareit.user.validation;
 
 public interface UserValidator {
-    interface Create {}
+    interface Create {
+    }
 
-    interface Update {}
+    interface Update {
+    }
 }

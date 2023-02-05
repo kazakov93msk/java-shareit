@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class UserMapper {
     public static User mapToUser(UserDto userDto) {
+        if (userDto == null) {
+            return null;
+        }
         return User.builder()
                 .id(userDto.getId())
                 .name(userDto.getName())
@@ -20,6 +23,9 @@ public class UserMapper {
     }
 
     public static UserDto mapToUserDto(User user) {
+        if (user == null) {
+            return null;
+        }
         return UserDto.builder()
                 .id(user.getId())
                 .name(user.getName())

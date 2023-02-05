@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
@@ -10,12 +11,14 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.OperationAccessException;
-import ru.practicum.shareit.exception.WrongBookingStateException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.utility.PageableBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.practicum.shareit.booking.property.BookingStatus.WAITING;
 
 @Service
 @RequiredArgsConstructor
@@ -25,15 +28,15 @@ public class BookingServiceImpl implements BookingService {
     private final UserService userService;
 
     @Override
-    public List<Booking> findAllByBookerId(Long bookerId, BookingState state) {
+    public List<Booking> findAllByBookerId(Long bookerId, BookingState state, Long from, Integer size) {
         userService.findById(bookerId);
-        return filterUserBookingsByState(bookerId, state, false);
+        return filterUserBookingsByState(bookerId, state, false, from, size);
     }
 
     @Override
-    public List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state) {
+    public List<Booking> findAllByItemsOwnerId(Long ownerId, BookingState state, Long from, Integer size) {
         userService.findById(ownerId);
-        return filterUserBookingsByState(ownerId, state, true);
+        return filterUserBookingsByState(ownerId, state, true, from, size);
     }
 
     @Override
@@ -51,13 +54,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Booking approveById(Long userId, Long bookingId, Boolean isPositiveDecision) {
-        Booking booking = bookingRep.findById(bookingId).orElseThrow(
-                () -> new NotFoundException(Booking.class.getName(), bookingId)
-        );
+        Booking booking = findById(userId, bookingId);
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new OperationAccessException(Item.class.getSimpleName(), userId, booking.getItem().getId());
         }
-        if (!BookingStatus.WAITING.equals(booking.getStatus())) {
+        if (!WAITING.equals(booking.getStatus())) {
             throw new NotAvailableException("The booking decision has already been made.");
         }
         booking.setStatus(isPositiveDecision ? BookingStatus.APPROVED : BookingStatus.REJECTED);
@@ -67,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Booking create(Long userId, Booking booking) {
-        booking.setStatus(BookingStatus.WAITING);
+        booking.setStatus(WAITING);
         if (booking.getItem().getOwner().getId().equals(userId)) {
             throw new OperationAccessException("The owner cannot be a booker.");
         }
@@ -77,22 +78,27 @@ public class BookingServiceImpl implements BookingService {
         return bookingRep.save(booking);
     }
 
-    private List<Booking> filterUserBookingsByState(Long userId, BookingState state, Boolean isOwner) {
+    private List<Booking> filterUserBookingsByState(
+            Long userId,
+            BookingState state,
+            Boolean isOwner,
+            Long from,
+            Integer size
+    ) {
+        Pageable pageable = PageableBuilder.getPageable(from, size, bookingRep.START_DESC);
         switch (state) {
-            case ALL:
-                return bookingRep.findByUserId(userId, isOwner, bookingRep.START_DESC);
             case WAITING:
             case REJECTED:
                 BookingStatus bookingStatus = BookingStatus.valueOf(state.toString());
-                return bookingRep.findByUserIdAndStatus(userId, isOwner, bookingStatus, bookingRep.START_DESC);
+                return bookingRep.findByUserIdAndStatus(userId, isOwner, bookingStatus, pageable).getContent();
             case CURRENT:
-                return bookingRep.findByUserCurrent(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
+                return bookingRep.findByUserCurrent(userId, isOwner, LocalDateTime.now(), pageable).getContent();
             case PAST:
-                return bookingRep.findByUserPast(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
+                return bookingRep.findByUserPast(userId, isOwner, LocalDateTime.now(), pageable).getContent();
             case FUTURE:
-                return bookingRep.findByUserFuture(userId, isOwner, LocalDateTime.now(), bookingRep.START_DESC);
+                return bookingRep.findByUserFuture(userId, isOwner, LocalDateTime.now(), pageable).getContent();
             default:
-                throw new WrongBookingStateException("Unknown state: " + state);
+                return bookingRep.findByUserId(userId, isOwner, pageable).getContent();
         }
     }
 }

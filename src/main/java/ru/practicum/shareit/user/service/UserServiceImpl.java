@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(Long id) {
         return userRep.findById(id).orElseThrow(
-                () -> new NotFoundException(User.class.toString(), id)
+                () -> new NotFoundException(User.class.getSimpleName(), id)
         );
     }
 
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User update(Long userId, User user) {
         User oldUser = userRep.findById(userId).orElseThrow(
-                () -> new NotFoundException(User.class.toString(), userId)
+                () -> new NotFoundException(User.class.getSimpleName(), userId)
         );
         if (user.getName() != null && !user.getName().isBlank()) {
             oldUser.setName(user.getName());
@@ -51,9 +51,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteById(Long userId) {
-        if (!userRep.existsById(userId)) {
-            throw new NotFoundException(User.class.toString(), userId);
-        }
+        validateExistence(userId);
         userRep.deleteById(userId);
+    }
+
+    @Override
+    public void validateExistence(Long id) {
+        if (!userRep.existsById(id)) {
+            throw new NotFoundException(User.class.getSimpleName(), id);
+        }
     }
 }

@@ -47,11 +47,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<Map<String, String>> handleValidation(final ValidationDataException e) {
-        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
     public ResponseEntity<Map<String, String>> handleSpringValidation(final MethodArgumentNotValidException e) {
         log.debug(e.getMessage());
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
@@ -60,13 +55,13 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<Map<String, String>> handleConstraintViolation(final ConstraintViolationException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
     public ResponseEntity<Map<String, String>> handleWrongBookingState(final WrongBookingStateException e) {
         log.debug(e.getMessage());
-        return new ResponseEntity<>(Map.of("error",  e.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler

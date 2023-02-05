@@ -14,4 +14,6 @@ public interface UserService {
     User update(Long userId, User user);
 
     void deleteById(Long id);
+
+    void validateExistence(Long id);
 }
