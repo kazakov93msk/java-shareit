@@ -3,19 +3,21 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import static java.util.Collections.emptyList;
 import static ru.practicum.shareit.utility.RequestUtil.HEADER_USER_ID;
 
-@RestController
+@Controller
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
@@ -26,8 +28,8 @@ public class ItemController {
     @GetMapping
     public ResponseEntity<Object> findAllByUserId(
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @RequestParam(defaultValue = "1") Long from,
-            @RequestParam(defaultValue = "30") Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @Positive @RequestParam(defaultValue = "30") Integer size
     ) {
         log.debug("GET: Get all items where owner ID = {}.", userId);
         return itemClient.findAllByUserId(userId, from, size);
@@ -46,15 +48,14 @@ public class ItemController {
     public ResponseEntity<Object> searchByParams(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(defaultValue = "") String text,
-            @RequestParam(defaultValue = "1") Long from,
-            @RequestParam(defaultValue = "30") Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @Positive @RequestParam(defaultValue = "30") Integer size
     ) {
         log.debug("GET: Search item containing text '{}' in title or description.", text);
-        if (text != null && !text.isBlank()) {
-            return itemClient.searchByParams(userId, text, from, size);
-        } else {
-            return new ResponseEntity<>(emptyList(), HttpStatus.OK);
+        if (text.isBlank()) {
+            return ResponseEntity.ok(emptyList());
         }
+        return itemClient.searchByParams(userId, text, from, size);
     }
 
     @PostMapping

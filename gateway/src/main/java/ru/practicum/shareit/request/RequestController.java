@@ -2,15 +2,18 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import static ru.practicum.shareit.utility.RequestUtil.HEADER_USER_ID;
 
-@RestController
+@Controller
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 @Validated
@@ -33,8 +36,8 @@ public class RequestController {
     @GetMapping("/all")
     public ResponseEntity<Object> findAll(
             @RequestHeader(HEADER_USER_ID) Long userId,
-            @RequestParam(defaultValue = "1") Long from,
-            @RequestParam(defaultValue = "30") Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @Positive @RequestParam(defaultValue = "30") Integer size
     ) {
         return requestClient.findAll(userId, from, size);
     }

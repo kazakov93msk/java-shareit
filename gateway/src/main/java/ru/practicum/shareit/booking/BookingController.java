@@ -3,16 +3,19 @@ package ru.practicum.shareit.booking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.property.BookingState;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import static ru.practicum.shareit.utility.RequestUtil.HEADER_USER_ID;
 
-@RestController
+@Controller
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
@@ -32,8 +35,8 @@ public class BookingController {
     public ResponseEntity<Object> findAllByBooker(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String state,
-            @RequestParam(defaultValue = "1") Long from,
-            @RequestParam(defaultValue = "30") Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @Positive @RequestParam(defaultValue = "30") Integer size
     ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where booker ID = {}.", userId);
@@ -44,8 +47,8 @@ public class BookingController {
     public ResponseEntity<Object> getAllByItemsOwner(
             @RequestHeader(HEADER_USER_ID) Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String state,
-            @RequestParam(defaultValue = "1") Long from,
-            @RequestParam(defaultValue = "30") Integer size
+            @PositiveOrZero @RequestParam(defaultValue = "1") Long from,
+            @Positive @RequestParam(defaultValue = "30") Integer size
     ) {
         BookingState bookingState = BookingState.checkState(state);
         log.debug("GET: Get bookings where owner ID = {}.", userId);
