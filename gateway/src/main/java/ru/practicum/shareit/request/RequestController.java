@@ -16,9 +16,9 @@ import static ru.practicum.shareit.utility.RequestUtil.HEADER_USER_ID;
 @Validated
 public class RequestController {
     private final RequestClient requestClient;
+
     @GetMapping
     public ResponseEntity<Object> findAllByUserId(@RequestHeader(HEADER_USER_ID) Long userId) {
-        
         return requestClient.findAllByUserId(userId);
     }
 
@@ -27,7 +27,6 @@ public class RequestController {
             @RequestHeader(HEADER_USER_ID) Long userId,
             @PathVariable Long requestId
     ) {
-        
         return requestClient.findById(userId, requestId);
     }
 
@@ -37,7 +36,6 @@ public class RequestController {
             @RequestParam(defaultValue = "1") Long from,
             @RequestParam(defaultValue = "30") Integer size
     ) {
-        
         return requestClient.findAll(userId, from, size);
     }
 
